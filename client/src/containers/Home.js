@@ -4,6 +4,7 @@ import InitialGameState from '../components/InitialGameState';
 import Loading from '../components/Loading';
 import Error from '../components/Error';
 import InputForm from '../components/InputForm';
+import { initializeSocketConection, disconnectSocket, emitJoiningEvent, emitNewGameEvent} from '../socket';
 
 const Home = () => {
     const [step, setStep] = React.useState(1);
@@ -55,17 +56,19 @@ const Home = () => {
     const onUserSubmitHisForm = () => {
         setLoading(true);
         if (isMyFormValid()) {
-            if (newGame) {
-                console.log('Je demande à appeler le serveur pour créer une nouvelle partie !')
-            } else {
-                console.log('Je demande à appeler le serveur pour rejoindre une nouvelle partie !')
-            }
+             if (newGame) {
+        emitNewGameEvent();
+        console.log('Je demande à appeler le serveur pour créer une nouvelle partie !');
+    } else {
+        console.log('Je demande à appeler le serveur pour rejoindre une nouvelle partie !');
+        emitJoiningEvent(room);
+    }
         } else {
             displayError(newGame ? 'Please fill out your name' : 'Please fill out your name and room id')
         }
     }
     React.useEffect(() => {
-        const socket = initializeSocketConection();
+        let socket = initializeSocketConection();
         socket.on('newGameCreated', (room) => {
             setRoom(room);
             setServerConfirmed(true);
@@ -96,7 +99,7 @@ const Home = () => {
                             <Error display={error} message={errorMessage}/>
                             <InputForm 
                                 stepBack={stepBack} 
-                                onSubmit={console.log('Bienvenue !')}
+                                onSubmit={onUserSubmitHisForm}
                                 onTyping={onUserWritingSomething}
                                 newGame={newGame}
                                 name = {name}

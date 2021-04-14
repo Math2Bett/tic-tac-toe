@@ -5,14 +5,21 @@ let socket = null;
 
 export const initializeSocketConection = () => {
     return getSocket();
-}
+};
 export const getSocket = () => {
     if (socket) {
         return socket;
     }
     socket = socketIOClient(ENDPOINT);
     return socket;
-}s
+};
 export const disconnectSocket = () => {
     socket.disconnect();
-}
+};
+export const emitNewGameEvent = () => {
+    socket.emit('newGame');
+};
+
+export const emitJoiningEvent = (room) => {
+    socket.emit('joining', { room })
+};
