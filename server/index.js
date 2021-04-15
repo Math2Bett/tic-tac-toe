@@ -62,32 +62,38 @@ io.on('connection', socket => {
     })
 
     socket.on('newRoomJoin', ({ room, name }) => {
-        console.log('newRoomJoin event received !');
+        console.log('newRoomJoin event received !', room);
+        
         if (room === '' || name === '') {
             io.to(socket.id).emit('joinError')
         }
+
         socket.join(room)
         const id = socket.id
         const newPlayer = new Player(name, room, id)
         joinRoom(newPlayer, room)
+
         const peopleInRoom = getRoomPlayersNum(room)
+
         if (peopleInRoom === 1) {
             io.to(room).emit('waiting')
         }
+
         if (peopleInRoom === 2) {
             pieceAssignment(room)
             currentPlayers = rooms.get(room).players
             for (const player of currentPlayers) {
-                console.log(player);
-                io.to(player.id).emit('pieceAssignment', { playerPiece: player.piece, id: player.id })
+                io.to(player.id).emit('pieceAssignment', { piece: player.piece, id: player.id })
             }
             newGame(room)
+
             const currentRoom = rooms.get(room)
             const gameState = currentRoom.board.game
             const turn = currentRoom.board.turn
-            const players = currentRoom.players.map((player) => ({id : player.id, name : player.name}))
-            io.to(room).emit('starting', { gameState, players, playerTurn : turn })
+            const players = currentRoom.players.map((player) => [player.id, player.name])
+            io.to(room).emit('starting', { gameState, players, turn })
         }
+
         if (peopleInRoom === 3) {
             socket.leave(room)
             kick(room)
@@ -96,13 +102,30 @@ io.on('connection', socket => {
     })
 
     socket.on('move', ({ room, piece, index }) => {
-        console.log('move event received !');
-        return;
+        currentBoard = rooms.get(room).board
+        currentBoard.move(index, piece)
+
+        if (currentBoard.checkWinner(piece)) {
+            io.to(room).emit('winner', { gameState: currentBoard.game, id: socket.id })
+        } else if (currentBoard.checkDraw()) {
+            io.to(room).emit('draw', { gameState: currentBoard.game })
+        } else {
+            currentBoard.switchTurn();
+            io.to(room).emit('update', { gameState: currentBoard.game, turn: currentBoard.turn })
+        }
     })
 
     socket.on('playAgainRequest', (room) => {
         console.log('playAgainRequest event received !');
-        return;
+        console.log('playAgainRequest event received !');
+        currentRoom = rooms.get(room)
+        currentRoom.board.reset()
+        pieceAssignment(room)
+        currentPlayers = currentRoom.players
+        for (const player of currentPlayers) {
+            io.to(player).emit('pieceAssignment')
+        }
+        io.to(room).emit('restart', { gameState: currentRoom.board.game, turn: currentRoom.board.turn })
     })
 
     socket.on('disconnecting', () => {
