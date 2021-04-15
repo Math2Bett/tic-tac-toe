@@ -7,6 +7,7 @@ import Status from '../components/Status'
 import PlayAgain from '../components/PlayAgain'
 import io from 'socket.io-client'
 import qs from 'qs'
+import ScoreBoard from '../components/Score/ScoreBoard'
 const ENDPOINT = 'ws://localhost:4000'
 
 class Game extends Component {
@@ -152,6 +153,7 @@ class Game extends Component {
                    <div className="board">
                        {squareArray}
                    </div>
+                   <ScoreBoard data={{player1:['You', this.state.currentPlayerScore], player2: [this.state.opponentPlayer[0], this.state.opponentPlayer[1]]}}/>
                    <PlayAgain end={this.state.end} onClick={this.playAgainRequest} />
                </>
            )
