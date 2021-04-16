@@ -130,13 +130,13 @@ img{
 }
 
 .btn-primary{
-  background: var(--mid-blue);
+  background: #22732a;
   color: #fff;
 }
 
 .btn-secondary{
-  background: var(--light-blue);
-  color: var(--mid-blue);
+  background: #931212;
+  color: #fff;
 }
 
 
