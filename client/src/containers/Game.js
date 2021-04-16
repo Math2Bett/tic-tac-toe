@@ -8,7 +8,7 @@ import PlayAgain from '../components/PlayAgain'
 import io from 'socket.io-client'
 import qs from 'qs'
 import ScoreBoard from '../components/Score/ScoreBoard'
-const ENDPOINT = 'ws://localhost:4000'
+const ENDPOINT = 'https://morpion-stage.herokuapp.com/'
 
 class Game extends Component {
    constructor(props) {
